@@ -1,0 +1,1088 @@
+# EntityManager - Resumo
+
+## getReference()
+
+Retorna uma referência gerenciada para uma entidade, normalmente através de um proxy.
+
+```java
+Produto produto = entityManager.getReference(Produto.class, 1L);
+```
+
+### Características
+
+- Não executa `SELECT` imediatamente.
+- Apenas o ID fica disponível inicialmente.
+- Ao acessar outros atributos, o Hibernate busca os dados no banco.
+- Muito útil para criar relacionamentos sem carregar a entidade inteira.
+
+### Exemplo
+
+```java
+Pedido pedido = new Pedido();
+
+Produto produto = entityManager.getReference(Produto.class, 1L);
+
+pedido.setProduto(produto);
+
+entityManager.persist(pedido);
+```
+
+SQL gerado:
+
+```sql
+insert into pedido (produto_id)
+values (1)
+```
+
+Sem necessidade de:
+
+```sql
+select * from produto where id = 1
+```
+
+---
+
+## refresh()
+
+Recarrega uma entidade a partir do banco de dados.
+
+```java
+Cliente cliente = entityManager.find(Cliente.class, 1L);
+
+cliente.setNome("João Alterado");
+
+entityManager.refresh(cliente);
+```
+
+Resultado:
+
+```java
+cliente.getNome(); // João
+```
+
+### Características
+
+- Descarta alterações locais ainda não persistidas.
+- Recarrega a entidade com os dados atuais do banco.
+- Útil quando outro processo pode ter alterado o registro.
+
+### Exemplo
+
+Estado no banco:
+
+```text
+João
+```
+
+Código:
+
+```java
+cliente.setNome("Maria");
+entityManager.refresh(cliente);
+```
+
+Resultado:
+
+```text
+João
+```
+
+---
+
+## flush()
+
+Sincroniza o contexto de persistência com o banco.
+
+```java
+cliente.setNome("João Alterado");
+
+entityManager.flush();
+```
+
+SQL executado:
+
+```sql
+update cliente
+set nome = 'João Alterado'
+where id = 1
+```
+
+### Características
+
+- Envia INSERTs, UPDATEs e DELETEs pendentes.
+- Não realiza commit.
+- As alterações ainda podem ser revertidas por rollback.
+
+### Exemplo
+
+```java
+cliente.setNome("João Alterado");
+
+entityManager.flush();
+
+transaction.rollback();
+```
+
+Mesmo com o UPDATE executado, o rollback desfaz a alteração.
+
+### Fluxo
+
+```text
+Alteração da entidade
+        ↓
+      flush()
+        ↓
+SQL enviado ao banco
+        ↓
+commit ou rollback
+```
+
+---
+
+## detach() / evict()
+
+Remove uma entidade do contexto de persistência.
+
+### JPA
+
+```java
+entityManager.detach(cliente);
+```
+
+### Hibernate
+
+```java
+session.evict(cliente);
+```
+
+### Características
+
+- A entidade deixa de ser gerenciada.
+- O Hibernate para de fazer dirty checking.
+- Alterações futuras não serão persistidas automaticamente.
+
+### Exemplo
+
+```java
+Cliente cliente = entityManager.find(Cliente.class, 1L);
+
+entityManager.detach(cliente);
+
+cliente.setNome("Novo Nome");
+
+entityManager.flush();
+```
+
+Resultado:
+
+```sql
+-- nenhum UPDATE executado
+```
+
+### Estado da entidade
+
+```text
+Managed
+   ↓
+detach()/evict()
+   ↓
+Detached
+```
+
+---
+
+## Resumo Geral
+
+| Operação | O que faz |
+|-----------|-----------|
+| `getReference()` | Obtém uma referência/proxy sem consultar o banco imediatamente |
+| `refresh()` | Recarrega a entidade a partir do banco, descartando alterações locais |
+| `flush()` | Sincroniza alterações pendentes com o banco sem fazer commit |
+| `detach()` | Remove uma entidade do contexto de persistência |
+| `evict()` | Equivalente Hibernate ao `detach()` |
+
+---
+
+## Ciclo de vida simplificado
+
+```text
+new/transient
+      │
+      ▼
+persist()
+      │
+      ▼
+managed
+      │
+ ┌────┼────┐
+ │    │    │
+ ▼    ▼    ▼
+flush refresh detach
+ │     │      │
+ │     │      ▼
+ │     │   detached
+ │     │
+ ▼     ▼
+banco estado do banco
+```
+
+## clear()
+
+Remove todas as entidades do contexto de persistência.
+
+```java
+entityManager.clear();
+```
+
+### Características
+
+* Equivale a executar `detach()` para todas as entidades gerenciadas.
+* Esvazia o cache de primeiro nível (Persistence Context).
+* Todas as entidades passam para o estado **detached**.
+* Alterações futuras nessas entidades não serão monitoradas pelo Hibernate.
+
+### Exemplo
+
+```java
+Cliente cliente = entityManager.find(Cliente.class, 1L);
+Pedido pedido = entityManager.find(Pedido.class, 1L);
+
+entityManager.clear();
+```
+
+Após o `clear()`:
+
+```text
+cliente -> detached
+pedido  -> detached
+```
+
+### Alterações não persistidas
+
+```java
+Cliente cliente = entityManager.find(Cliente.class, 1L);
+
+cliente.setNome("Novo Nome");
+
+entityManager.clear();
+
+entityManager.flush();
+```
+
+Resultado:
+
+```sql
+-- nenhum UPDATE executado
+```
+
+Como a entidade foi removida do contexto de persistência, o Hibernate deixa de monitorá-la e as alterações pendentes são descartadas.
+
+### Impacto no cache de primeiro nível
+
+```java
+Cliente c1 = entityManager.find(Cliente.class, 1L);
+
+entityManager.clear();
+
+Cliente c2 = entityManager.find(Cliente.class, 1L);
+```
+
+O Hibernate executará um novo SELECT:
+
+```sql
+select *
+from cliente
+where id = 1
+```
+
+Isso acontece porque o `clear()` remove todas as entidades armazenadas no cache de primeiro nível.
+
+### Uso comum em processamento batch
+
+```java
+for (...) {
+    entityManager.persist(obj);
+
+    if (contador % 100 == 0) {
+        entityManager.flush();
+        entityManager.clear();
+    }
+}
+```
+
+Benefícios:
+
+* Grava os registros no banco (`flush()`).
+* Libera memória (`clear()`).
+* Evita crescimento excessivo do contexto de persistência.
+
+### Diferença entre detach() e clear()
+
+| Método             | Efeito                                 |
+| ------------------ | -------------------------------------- |
+| `detach(entidade)` | Remove apenas uma entidade do contexto |
+| `clear()`          | Remove todas as entidades do contexto  |
+
+### Resumo
+
+```text
+detach() -> remove uma entidade
+clear()  -> remove todas as entidades
+```
+
+## merge()
+O merge() só faz sentido quando a entidade está detached.
+
+## Atualização de entidade gerenciada sem merge()
+
+Quando uma entidade está no estado **managed** (gerenciada pelo EntityManager), não é necessário utilizar `merge()` para persistir alterações.
+
+O Hibernate realiza o **dirty checking** automaticamente durante o `flush()` ou `commit()`.
+
+### Exemplo
+
+```java
+entityManager.getTransaction().begin();
+
+Produto produto = entityManager.getReference(Produto.class, 1L);
+
+produto.setNome("Kindle PaperWhite");
+
+entityManager.getTransaction().commit();
+```
+
+### O que acontece?
+
+1. `getReference()` retorna uma referência gerenciada para a entidade.
+2. A alteração é realizada através do método `setNome()`.
+3. Durante o `commit()`, o Hibernate executa automaticamente um `flush()`.
+4. O mecanismo de dirty checking identifica que a entidade foi modificada.
+5. O `UPDATE` é enviado para o banco de dados.
+
+### Equivalente conceitual
+
+```java
+entityManager.getTransaction().begin();
+
+Produto produto = entityManager.find(Produto.class, 1L);
+
+produto.setNome("Kindle PaperWhite");
+
+entityManager.getTransaction().commit();
+```
+
+O comportamento é o mesmo: como a entidade está gerenciada, o Hibernate monitora suas alterações automaticamente.
+
+### Quando o merge() é necessário?
+
+O `merge()` é utilizado principalmente para entidades no estado **detached**.
+
+```java
+Produto produto = entityManager.find(Produto.class, 1L);
+
+entityManager.detach(produto);
+
+produto.setNome("Novo Nome");
+
+entityManager.merge(produto);
+```
+
+Nesse cenário, o Hibernate precisa reanexar a entidade ao contexto de persistência para que as alterações sejam sincronizadas com o banco.
+
+### Regra prática
+
+```text
+Entidade managed  -> Não precisa de merge()
+Entidade detached -> Precisa de merge()
+```
+
+## commit()
+
+Confirma definitivamente uma transação no banco de dados.
+
+```java
+entityManager.getTransaction().commit();
+```
+
+### O que acontece internamente?
+
+Antes de efetivar a transação, o Hibernate executa automaticamente um `flush()`.
+
+Fluxo simplificado:
+
+```text
+commit()
+   ↓
+flush()
+   ↓
+INSERTs, UPDATEs e DELETEs são enviados ao banco
+   ↓
+Banco valida restrições e executa os comandos
+   ↓
+COMMIT da transação
+   ↓
+Alterações tornam-se permanentes
+```
+
+### Exemplo
+
+```java
+entityManager.getTransaction().begin();
+
+Produto produto = entityManager.find(Produto.class, 1L);
+
+produto.setNome("Kindle PaperWhite");
+
+entityManager.getTransaction().commit();
+```
+
+Fluxo interno:
+
+```text
+1. Dirty Checking identifica alterações
+2. Hibernate executa UPDATE
+3. Banco recebe o UPDATE
+4. Banco executa COMMIT
+5. Alteração torna-se definitiva
+```
+
+SQL gerado:
+
+```sql
+update Produto
+set nome = ?
+where id = ?
+```
+
+### Relação entre commit() e flush()
+
+Todo `commit()` executa um `flush()` automaticamente.
+
+```java
+entityManager.getTransaction().commit();
+```
+
+Equivale conceitualmente a:
+
+```java
+entityManager.flush();
+
+connection.commit();
+```
+
+### Diferença entre flush() e commit()
+
+| Operação   | O que faz                            |
+| ---------- | ------------------------------------ |
+| `flush()`  | Sincroniza alterações com o banco    |
+| `commit()` | Executa flush e confirma a transação |
+
+### Exemplo com rollback
+
+```java
+entityManager.getTransaction().begin();
+
+produto.setNome("Novo Nome");
+
+entityManager.flush();
+
+entityManager.getTransaction().rollback();
+```
+
+Mesmo que o UPDATE tenha sido enviado ao banco, o rollback desfaz todas as alterações.
+
+Fluxo:
+
+```text
+flush()
+   ↓
+UPDATE executado
+   ↓
+rollback()
+   ↓
+Alteração desfeita
+```
+
+### Exceções durante o commit
+
+Se ocorrer erro durante o flush automático, o commit não será concluído.
+
+Exemplo:
+
+```java
+produto.setNome(null);
+
+entityManager.getTransaction().commit();
+```
+
+Se a coluna possuir restrição `NOT NULL`, o banco rejeitará o UPDATE e a transação será abortada.
+
+### Resumo
+
+```text
+flush()  -> Memória → Banco
+commit() -> flush() + confirmação definitiva da transação
+rollback() -> desfaz alterações da transação
+```
+
+### Regra prática
+
+```text
+Todo commit executa um flush antes de confirmar a transação.
+```
+
+
+## Diferenças entre persist() e merge()
+
+Os métodos `persist()` e `merge()` são utilizados para tornar entidades gerenciadas pelo JPA, porém possuem comportamentos bastante diferentes.
+
+### persist()
+
+O método `persist()` transforma a própria entidade passada como parâmetro em uma entidade gerenciada.
+
+```java
+Produto produto = new Produto();
+produto.setNome("Kindle");
+
+entityManager.persist(produto);
+```
+
+Após a chamada:
+
+```text
+produto -> managed
+```
+
+A mesma instância continua sendo utilizada e monitorada pelo EntityManager.
+
+```java
+produto.setNome("Kindle PaperWhite");
+```
+
+A alteração será detectada automaticamente pelo mecanismo de dirty checking.
+
+### Exemplo
+
+```java
+Produto produto = new Produto();
+
+entityManager.persist(produto);
+
+System.out.println(entityManager.contains(produto));
+```
+
+Resultado:
+
+```text
+true
+```
+
+---
+
+### merge()
+
+O método `merge()` possui um comportamento diferente.
+
+Ele não torna a entidade passada por parâmetro gerenciada.
+
+Em vez disso, o Hibernate/JPA copia o estado da entidade para uma outra instância gerenciada e retorna essa instância.
+
+```java
+Produto produto = new Produto();
+produto.setId(1L);
+
+Produto produtoGerenciado = entityManager.merge(produto);
+```
+
+Após a chamada:
+
+```text
+produto            -> continua detached
+produtoGerenciado  -> managed
+```
+
+### Exemplo
+
+```java
+Produto produto = new Produto();
+produto.setId(1L);
+
+Produto gerenciado = entityManager.merge(produto);
+
+System.out.println(produto == gerenciado);
+```
+
+Resultado:
+
+```text
+false
+```
+
+As duas referências apontam para objetos diferentes.
+
+### Verificando o estado
+
+```java
+System.out.println(entityManager.contains(produto));
+System.out.println(entityManager.contains(gerenciado));
+```
+
+Resultado:
+
+```text
+false
+true
+```
+
+---
+
+### Uso correto do retorno do merge()
+
+Sempre que for necessário continuar trabalhando com a entidade gerenciada, utilize o objeto retornado pelo método.
+
+```java
+produto = entityManager.merge(produto);
+```
+
+ou
+
+```java
+Produto produtoGerenciado = entityManager.merge(produto);
+```
+
+A partir desse ponto, utilize a referência retornada.
+
+---
+
+### Inserção e atualização
+
+#### persist()
+
+Utilizado principalmente para novas entidades.
+
+```java
+Produto produto = new Produto();
+
+entityManager.persist(produto);
+```
+
+Resultado:
+
+```sql
+INSERT
+```
+
+---
+
+#### merge()
+
+Pode ser utilizado tanto para inserção quanto para atualização.
+
+```java
+Produto produto = new Produto();
+produto.setId(1L);
+
+entityManager.merge(produto);
+```
+
+Resultado típico:
+
+```sql
+SELECT
+UPDATE
+```
+
+Ou, caso a entidade não exista:
+
+```sql
+SELECT
+INSERT
+```
+
+---
+
+### Comparação
+
+| Característica                      | persist() | merge() |
+| ----------------------------------- | --------- | ------- |
+| Torna a entidade passada gerenciada | Sim       | Não     |
+| Retorna uma entidade gerenciada     | Não       | Sim     |
+| Normalmente faz SELECT              | Não       | Sim     |
+| Usado para entidades novas          | Sim       | Sim     |
+| Usado para entidades detached       | Não       | Sim     |
+| Mantém a mesma instância            | Sim       | Não     |
+
+---
+
+### Resumo
+
+```text
+persist()
+    ↓
+Entidade passada torna-se managed
+
+merge()
+    ↓
+Entidade passada continua detached
+    ↓
+JPA cria/localiza uma entidade managed
+    ↓
+Estado é copiado para ela
+    ↓
+Entidade managed é retornada
+```
+
+### Regra prática
+
+```text
+persist() -> a entidade passada torna-se gerenciada
+
+merge() -> a entidade retornada torna-se gerenciada
+```
+
+
+## Por que `getReference()` + `detach()` pode causar `LazyInitializationException`?
+
+Durante os estudos foi realizado o seguinte teste:
+
+```java
+Produto produto = entityManager.getReference(Produto.class, 1L);
+
+entityManager.detach(produto);
+
+produto.setNome("Kindle PaperWhite");
+```
+
+O resultado foi uma:
+
+```text
+LazyInitializationException
+```
+
+À primeira vista isso parece estranho, pois normalmente imaginamos que apenas métodos `get` possam disparar o carregamento da entidade.
+
+---
+
+## O que o getReference() retorna?
+
+O método:
+
+```java
+Produto produto = entityManager.getReference(Produto.class, 1L);
+```
+
+não retorna necessariamente uma instância completa da entidade.
+
+Na maioria dos casos o Hibernate retorna um **proxy**, que é um objeto especial criado dinamicamente.
+
+Inicialmente ele possui apenas o identificador:
+
+```text
+id = 1
+nome = ?
+descricao = ?
+preco = ?
+```
+
+Nenhum SELECT é executado nesse momento.
+
+---
+
+## O que acontece ao acessar um atributo?
+
+Quando um atributo é acessado:
+
+```java
+produto.getNome();
+```
+
+o Hibernate percebe que o proxy ainda não foi carregado.
+
+Então ele executa:
+
+```sql
+select *
+from produto
+where id = 1
+```
+
+e preenche todos os atributos da entidade.
+
+Fluxo:
+
+```text
+getReference()
+      ↓
+Proxy não inicializado
+      ↓
+getNome()
+      ↓
+SELECT
+      ↓
+Proxy inicializado
+```
+
+---
+
+## O que o detach() faz?
+
+O método:
+
+```java
+entityManager.detach(produto);
+```
+
+remove a entidade do contexto de persistência.
+
+Após isso:
+
+```text
+Managed
+    ↓
+detach()
+    ↓
+Detached
+```
+
+O Hibernate deixa de monitorar a entidade.
+
+---
+
+## O problema
+
+Quando o proxy ainda não foi inicializado:
+
+```text
+getReference()
+      ↓
+Proxy vazio
+      ↓
+detach()
+      ↓
+Proxy vazio e detached
+```
+
+não existe mais uma Session/EntityManager associada a ele.
+
+Se posteriormente o Hibernate precisar carregar os dados da entidade, ele não terá como executar o SELECT.
+
+---
+
+## Por que o setNome() causou a exceção?
+
+O mais surpreendente foi perceber que a exceção ocorreu em:
+
+```java
+produto.setNome("Kindle PaperWhite");
+```
+
+e não em um getter.
+
+Isso acontece porque um proxy do Hibernate não é um objeto Java comum.
+
+Dependendo da versão do Hibernate e da estratégia utilizada (proxy tradicional ou bytecode enhancement), até mesmo chamadas a setters podem ser interceptadas.
+
+Conceitualmente é algo parecido com:
+
+```java
+public void setNome(String nome) {
+
+    inicializarProxySeNecessario();
+
+    this.nome = nome;
+}
+```
+
+Não é exatamente essa implementação, mas a ideia é semelhante.
+
+Ao receber a chamada do setter, o Hibernate pode decidir inicializar a entidade antes de permitir a alteração.
+
+---
+
+## Por que o Hibernate tenta inicializar?
+
+O Hibernate precisa manter consistência interna do estado da entidade.
+
+Para isso ele pode precisar:
+
+* Obter o estado atual da entidade.
+* Criar ou atualizar snapshots internos.
+* Controlar mecanismos de dirty checking.
+* Garantir que a entidade está completamente carregada antes da modificação.
+
+### O que é Dirty Checking?
+
+Dirty Checking é o mecanismo utilizado pelo Hibernate para descobrir automaticamente quais entidades foram alteradas.
+
+Exemplo:
+
+```java
+Produto produto = entityManager.find(Produto.class, 1L);
+
+produto.setNome("Novo Nome");
+```
+
+Nenhum UPDATE é executado imediatamente.
+
+Durante o `flush()` ou `commit()`, o Hibernate compara:
+
+```text
+Estado original
+        VS
+Estado atual
+```
+
+Se detectar diferenças:
+
+```sql
+update produto
+set nome = ?
+where id = ?
+```
+
+é executado automaticamente.
+
+Por isso o Hibernate mantém informações internas sobre o estado das entidades gerenciadas.
+
+---
+
+## Por que funcionou após chamar getNome()?
+
+Ao executar:
+
+```java
+Produto produto = entityManager.getReference(Produto.class, 1L);
+
+produto.getNome();
+
+entityManager.detach(produto);
+
+produto.setNome("Kindle PaperWhite");
+```
+
+o proxy foi inicializado antes do detach.
+
+Fluxo:
+
+```text
+getReference()
+      ↓
+Proxy vazio
+      ↓
+getNome()
+      ↓
+SELECT
+      ↓
+Proxy inicializado
+      ↓
+detach()
+      ↓
+Objeto detached com dados carregados
+      ↓
+setNome()
+      ↓
+OK
+```
+
+Agora todos os dados já estão em memória e nenhuma consulta adicional é necessária.
+
+---
+
+## Por que find() funciona?
+
+Quando usamos:
+
+```java
+Produto produto = entityManager.find(Produto.class, 1L);
+```
+
+o Hibernate executa imediatamente:
+
+```sql
+select *
+from produto
+where id = 1
+```
+
+A entidade já nasce completamente carregada.
+
+Fluxo:
+
+```text
+find()
+      ↓
+SELECT
+      ↓
+Entidade carregada
+      ↓
+detach()
+      ↓
+Objeto detached
+      ↓
+setNome()
+      ↓
+OK
+```
+
+Não existe proxy pendente de inicialização.
+
+---
+
+## Resumo
+
+### Cenário que falha
+
+```text
+getReference()
+      ↓
+Proxy não inicializado
+      ↓
+detach()
+      ↓
+Proxy sem Session
+      ↓
+setNome()
+      ↓
+Hibernate tenta inicializar
+      ↓
+LazyInitializationException
+```
+
+### Cenário que funciona
+
+```text
+getReference()
+      ↓
+Proxy não inicializado
+      ↓
+getNome()
+      ↓
+SELECT
+      ↓
+Proxy inicializado
+      ↓
+detach()
+      ↓
+Objeto com dados carregados
+      ↓
+setNome()
+      ↓
+OK
+```
+
+### Regra prática
+
+```text
+getReference() não garante que apenas getters irão inicializar o proxy.
+
+Dependendo da implementação do Hibernate, setters também podem disparar a inicialização da entidade.
+
+Se um proxy detached ainda não estiver inicializado, qualquer operação que exija seus dados pode resultar em LazyInitializationException.
+```
+
+
+find() retorna uma entidade carregada.
+
+getReference() retorna um proxy que pode precisar ser inicializado posteriormente.
+
+Se um proxy não inicializado for detached, qualquer operação que exija sua inicialização (não apenas getters, mas potencialmente setters também) pode gerar LazyInitializationException.
