@@ -1086,3 +1086,40 @@ find() retorna uma entidade carregada.
 getReference() retorna um proxy que pode precisar ser inicializado posteriormente.
 
 Se um proxy não inicializado for detached, qualquer operação que exija sua inicialização (não apenas getters, mas potencialmente setters também) pode gerar LazyInitializationException.
+
+
+find()
+↓
+Entidade carregada
+
+getReference()
+↓
+Proxy
+
+persist()
+↓
+Entidade passada vira managed
+
+merge()
+↓
+Entidade retornada vira managed
+
+flush()
+↓
+Memória → Banco
+
+refresh()
+↓
+Banco → Memória
+
+commit()
+↓
+flush() + confirmação da transação
+
+detach()
+↓
+Remove uma entidade
+
+clear()
+↓
+Remove todas as entidades
