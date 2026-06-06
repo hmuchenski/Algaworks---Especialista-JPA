@@ -34,7 +34,6 @@ public class OperacoesComTransacaoTest extends EntityManagerTest {
 	public void mostrarDifencaPersistMerge() {
 		Produto produtoPersist = new Produto();
 
-		produtoPersist.setId(6);
 		produtoPersist.setNome("Smartphone One Plus");
 		produtoPersist.setDescricao("O processador mais rápido.");
 		produtoPersist.setPreco(new BigDecimal(2000));
@@ -51,7 +50,6 @@ public class OperacoesComTransacaoTest extends EntityManagerTest {
 
 		Produto produtoMerge = new Produto();
 
-		produtoMerge.setId(7);
 		produtoMerge.setNome("Notebook Dell");
 		produtoMerge.setDescricao("O melhor da categoria.");
 		produtoMerge.setPreco(new BigDecimal(2000));
@@ -70,10 +68,10 @@ public class OperacoesComTransacaoTest extends EntityManagerTest {
 	@Test
 	public void inserirObjetoComMerge() {
 
-		Produto produto = new Produto(4, "Microfone", "Melhor qualidade de som", new BigDecimal(1000.0));
+		Produto produto = new Produto(null, "Microfone", "Melhor qualidade de som", new BigDecimal(1000.0));
 
 		entityManager.getTransaction().begin();
-		entityManager.merge(produto);
+		produto = entityManager.merge(produto);
 		entityManager.getTransaction().commit();
 
 		entityManager.clear();
@@ -102,7 +100,7 @@ public class OperacoesComTransacaoTest extends EntityManagerTest {
 	@Test
 	public void atualizarObjetoNaoGerenciado() {
 
-		Produto produto = new Produto(2, "Câmera Canon", "A melhor definição para suas fotos", new BigDecimal(5000.0));
+		Produto produto = new Produto(1, "Câmera Canon", "A melhor definição para suas fotos", new BigDecimal(5000.0));
 
 		produto.setNome("Câmera Canon 2.0");
 
@@ -134,7 +132,7 @@ public class OperacoesComTransacaoTest extends EntityManagerTest {
 	@Test
 	public void inserirObjeto() {
 
-		Produto produto = new Produto(5, "Câmera Canon", "A melhor definição para suas fotos", new BigDecimal(5000.0));
+		Produto produto = new Produto(null, "Câmera Canon", "A melhor definição para suas fotos", new BigDecimal(5000.0));
 
 		entityManager.getTransaction().begin();
 		entityManager.persist(produto);

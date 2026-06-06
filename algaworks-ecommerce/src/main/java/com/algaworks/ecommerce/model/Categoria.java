@@ -2,36 +2,35 @@ package com.algaworks.ecommerce.model;
 
 import java.util.Objects;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "cliente")
-public class Cliente {
+@Table(name = "categoria")
+public class Categoria {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	
-	private String nome;
-	
-	@Enumerated(EnumType.STRING)// Para guardar o nome do enum ao invés do número de ordenação dele
-	private Sexo sexo;
 
-	public Cliente() {
+	private String nome;
+
+	@Column(name = "categoria_pai_id")
+	private Integer categoriaPaiId;
+
+	public Categoria() {
 		super();
 	}
 
-	public Cliente(Integer id, String nome, Sexo sexo) {
+	public Categoria(Integer id, String nome, Integer categoriaPaiId) {
 		super();
 		this.id = id;
 		this.nome = nome;
-		this.sexo = sexo;
+		this.categoriaPaiId = categoriaPaiId;
 	}
 
 	public Integer getId() {
@@ -49,13 +48,13 @@ public class Cliente {
 	public void setNome(String nome) {
 		this.nome = nome;
 	}
-	
-	public Sexo getSexo() {
-		return sexo;
+
+	public Integer getCategoriaPaiId() {
+		return categoriaPaiId;
 	}
-	
-	public void setSexo(Sexo sexo) {
-		this.sexo = sexo;
+
+	public void setCategoriaPaiId(Integer categoriaPaiId) {
+		this.categoriaPaiId = categoriaPaiId;
 	}
 
 	@Override
@@ -71,7 +70,7 @@ public class Cliente {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Cliente other = (Cliente) obj;
+		Categoria other = (Categoria) obj;
 		return Objects.equals(id, other.id);
 	}
 
