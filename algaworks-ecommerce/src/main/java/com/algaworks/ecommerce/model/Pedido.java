@@ -2,6 +2,7 @@ package com.algaworks.ecommerce.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 
 import jakarta.persistence.Column;
@@ -12,6 +13,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -42,12 +46,20 @@ public class Pedido {
 	@Embedded
 	private EnderecoEntregaPedido enderecoEntrega;
 
+	@ManyToOne
+	@JoinColumn(name = "cliente_id")
+	private Cliente cliente;
+
+	@OneToMany(mappedBy = "pedido")
+	private List<ItemPedido> itensPedidos;
+
 	public Pedido() {
 		super();
 	}
 
 	public Pedido(Integer id, LocalDateTime dataPedido, LocalDateTime dataConclusao, Integer notaFiscalId,
-			BigDecimal total, StatusPedido status, EnderecoEntregaPedido enderecoEntrega) {
+			BigDecimal total, StatusPedido status, EnderecoEntregaPedido enderecoEntrega, Cliente cliente,
+			List<ItemPedido> itensPedidos) {
 		super();
 		this.id = id;
 		this.dataPedido = dataPedido;
@@ -56,6 +68,8 @@ public class Pedido {
 		this.total = total;
 		this.status = status;
 		this.enderecoEntrega = enderecoEntrega;
+		this.cliente = cliente;
+		this.itensPedidos = itensPedidos;
 	}
 
 	public Integer getId() {
@@ -112,6 +126,22 @@ public class Pedido {
 
 	public void setEnderecoEntrega(EnderecoEntregaPedido enderecoEntrega) {
 		this.enderecoEntrega = enderecoEntrega;
+	}
+
+	public Cliente getCliente() {
+		return cliente;
+	}
+
+	public void setCliente(Cliente cliente) {
+		this.cliente = cliente;
+	}
+
+	public List<ItemPedido> getItensPedidos() {
+		return itensPedidos;
+	}
+
+	public void setItensPedidos(List<ItemPedido> itensPedidos) {
+		this.itensPedidos = itensPedidos;
 	}
 
 	@Override

@@ -35,5 +35,7 @@
 
 * [Guia de Referência - Geração de IDs](./17-guia-geracao-ids.md)
 
+## JPA Entity Lifecycle - Operações x Estados
 
+* [JPA Entity Lifecycle - Operações x Estados](./18-relacao-comandos-principais-estados.md)
 

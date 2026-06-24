@@ -8,6 +8,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -17,27 +19,29 @@ public class ItemPedido {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	
-	@Column(name = "pedido_id")
-	private Integer pedidoId;
-	
-	@Column(name = "produto_id")
-	private Integer produtoId;
-	
+
+	@ManyToOne
+	@JoinColumn(name = "pedido_id")
+	private Pedido pedido;
+
+	@ManyToOne
+	@JoinColumn(name = "produto_id")
+	private Produto produto;
+
 	@Column(name = "preco_produto")
 	private BigDecimal precoProduto;
-	
+
 	private Integer quantidade;
 
 	public ItemPedido() {
 		super();
 	}
 
-	public ItemPedido(Integer id, Integer pedidoId, Integer produtoId, BigDecimal precoProduto, Integer quantidade) {
+	public ItemPedido(Integer id, Pedido pedido, Produto produto, BigDecimal precoProduto, Integer quantidade) {
 		super();
 		this.id = id;
-		this.pedidoId = pedidoId;
-		this.produtoId = produtoId;
+		this.pedido = pedido;
+		this.produto = produto;
 		this.precoProduto = precoProduto;
 		this.quantidade = quantidade;
 	}
@@ -50,20 +54,20 @@ public class ItemPedido {
 		this.id = id;
 	}
 
-	public Integer getPedidoId() {
-		return pedidoId;
+	public Pedido getPedido() {
+		return pedido;
 	}
 
-	public void setPedidoId(Integer pedidoId) {
-		this.pedidoId = pedidoId;
+	public void setPedido(Pedido pedido) {
+		this.pedido = pedido;
 	}
 
-	public Integer getProdutoId() {
-		return produtoId;
+	public Produto getProduto() {
+		return produto;
 	}
 
-	public void setProdutoId(Integer produtoId) {
-		this.produtoId = produtoId;
+	public void setProduto(Produto produto) {
+		this.produto = produto;
 	}
 
 	public BigDecimal getPrecoProduto() {
