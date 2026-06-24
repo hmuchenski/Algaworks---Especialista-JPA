@@ -39,3 +39,6 @@
 
 * [JPA Entity Lifecycle - Operações x Estados](./18-relacao-comandos-principais-estados.md)
 
+## Auto-relacionamento
+* [Explicando o funcionamento do Auto-relacionamento](./19-auto-relacionamento.md)
+

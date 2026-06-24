@@ -1,12 +1,15 @@
 package com.algaworks.ecommerce.model;
 
+import java.util.List;
 import java.util.Objects;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -19,18 +22,23 @@ public class Categoria {
 
 	private String nome;
 
-	@Column(name = "categoria_pai_id")
-	private Integer categoriaPaiId;
+	@ManyToOne
+	@JoinColumn(name = "categoria_pai_id")
+	private Categoria categoriaPai;
+
+	@OneToMany(mappedBy = "categoriaPai")
+	private List<Categoria> categorias;
 
 	public Categoria() {
 		super();
 	}
 
-	public Categoria(Integer id, String nome, Integer categoriaPaiId) {
+	public Categoria(Integer id, String nome, Categoria categoriaPai, List<Categoria> categorias) {
 		super();
 		this.id = id;
 		this.nome = nome;
-		this.categoriaPaiId = categoriaPaiId;
+		this.categoriaPai = categoriaPai;
+		this.categorias = categorias;
 	}
 
 	public Integer getId() {
@@ -49,12 +57,20 @@ public class Categoria {
 		this.nome = nome;
 	}
 
-	public Integer getCategoriaPaiId() {
-		return categoriaPaiId;
+	public Categoria getCategoriaPai() {
+		return categoriaPai;
 	}
 
-	public void setCategoriaPaiId(Integer categoriaPaiId) {
-		this.categoriaPaiId = categoriaPaiId;
+	public void setCategoriaPai(Categoria categoriaPai) {
+		this.categoriaPai = categoriaPai;
+	}
+
+	public List<Categoria> getCategorias() {
+		return categorias;
+	}
+
+	public void setCategorias(List<Categoria> categorias) {
+		this.categorias = categorias;
 	}
 
 	@Override
