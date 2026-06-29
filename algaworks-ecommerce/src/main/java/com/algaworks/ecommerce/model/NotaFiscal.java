@@ -8,6 +8,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -17,12 +19,13 @@ public class NotaFiscal {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	
-	@Column(name = "pedido_id")
-	private Integer pedidoId;
-	
+
+	@OneToOne(optional = false)
+	@JoinColumn(name = "pedido_id")
+	private Pedido pedido;
+
 	private String xml;
-	
+
 	@Column(name = "data_emissao")
 	private Date dataEmissao;
 
@@ -30,10 +33,10 @@ public class NotaFiscal {
 		super();
 	}
 
-	public NotaFiscal(Integer id, Integer pedidoId, String xml, Date dataEmissao) {
+	public NotaFiscal(Integer id, Pedido pedido, String xml, Date dataEmissao) {
 		super();
 		this.id = id;
-		this.pedidoId = pedidoId;
+		this.pedido = pedido;
 		this.xml = xml;
 		this.dataEmissao = dataEmissao;
 	}
@@ -46,12 +49,12 @@ public class NotaFiscal {
 		this.id = id;
 	}
 
-	public Integer getPedidoId() {
-		return pedidoId;
+	public Pedido getPedido() {
+		return pedido;
 	}
 
-	public void setPedidoId(Integer pedidoId) {
-		this.pedidoId = pedidoId;
+	public void setPedido(Pedido pedido) {
+		this.pedido = pedido;
 	}
 
 	public String getXml() {

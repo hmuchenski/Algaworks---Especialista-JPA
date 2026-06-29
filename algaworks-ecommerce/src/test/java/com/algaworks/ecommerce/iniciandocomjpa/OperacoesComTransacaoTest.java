@@ -68,7 +68,7 @@ public class OperacoesComTransacaoTest extends EntityManagerTest {
 	@Test
 	public void inserirObjetoComMerge() {
 
-		Produto produto = new Produto(null, "Microfone", "Melhor qualidade de som", new BigDecimal(1000.0));
+		Produto produto = new Produto(null, "Microfone", "Melhor qualidade de som", new BigDecimal(1000.0), null, null, null, null);
 
 		entityManager.getTransaction().begin();
 		produto = entityManager.merge(produto);
@@ -100,7 +100,7 @@ public class OperacoesComTransacaoTest extends EntityManagerTest {
 	@Test
 	public void atualizarObjetoNaoGerenciado() {
 
-		Produto produto = new Produto(1, "Câmera Canon", "A melhor definição para suas fotos", new BigDecimal(5000.0));
+		Produto produto = new Produto(1, "Câmera Canon", "A melhor definição para suas fotos", new BigDecimal(5000.0), null, null, null, null);
 
 		produto.setNome("Câmera Canon 2.0");
 
@@ -132,7 +132,7 @@ public class OperacoesComTransacaoTest extends EntityManagerTest {
 	@Test
 	public void inserirObjeto() {
 
-		Produto produto = new Produto(null, "Câmera Canon", "A melhor definição para suas fotos", new BigDecimal(5000.0));
+		Produto produto = new Produto(null, "Câmera Canon", "A melhor definição para suas fotos", new BigDecimal(5000.0), null, null, null, null);
 
 		entityManager.getTransaction().begin();
 		entityManager.persist(produto);

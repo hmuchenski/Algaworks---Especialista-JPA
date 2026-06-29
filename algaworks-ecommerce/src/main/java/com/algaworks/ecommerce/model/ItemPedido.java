@@ -1,12 +1,9 @@
 package com.algaworks.ecommerce.model;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -17,14 +14,18 @@ import jakarta.persistence.Table;
 public class ItemPedido {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+	@Column(name = "pedido_id")
+	private Integer pedidoId;
 
-	@ManyToOne
+	@Id
+	@Column(name = "produto_id")
+	private Integer produtoId;
+
+	@ManyToOne(optional = false)
 	@JoinColumn(name = "pedido_id")
 	private Pedido pedido;
 
-	@ManyToOne
+	@ManyToOne(optional = false)
 	@JoinColumn(name = "produto_id")
 	private Produto produto;
 
@@ -37,21 +38,20 @@ public class ItemPedido {
 		super();
 	}
 
-	public ItemPedido(Integer id, Pedido pedido, Produto produto, BigDecimal precoProduto, Integer quantidade) {
-		super();
-		this.id = id;
-		this.pedido = pedido;
-		this.produto = produto;
-		this.precoProduto = precoProduto;
-		this.quantidade = quantidade;
+	public Integer getPedidoId() {
+		return pedidoId;
 	}
 
-	public Integer getId() {
-		return id;
+	public void setPedidoId(Integer pedidoId) {
+		this.pedidoId = pedidoId;
 	}
 
-	public void setId(Integer id) {
-		this.id = id;
+	public Integer getProdutoId() {
+		return produtoId;
+	}
+
+	public void setProdutoId(Integer produtoId) {
+		this.produtoId = produtoId;
 	}
 
 	public Pedido getPedido() {
@@ -84,23 +84,6 @@ public class ItemPedido {
 
 	public void setQuantidade(Integer quantidade) {
 		this.quantidade = quantidade;
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(id);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		ItemPedido other = (ItemPedido) obj;
-		return Objects.equals(id, other.id);
 	}
 
 }

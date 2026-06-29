@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -29,16 +30,21 @@ public class Categoria {
 	@OneToMany(mappedBy = "categoriaPai")
 	private List<Categoria> categorias;
 
+	@ManyToMany(mappedBy = "categorias")
+	private List<Produto> produtos;
+
 	public Categoria() {
 		super();
 	}
 
-	public Categoria(Integer id, String nome, Categoria categoriaPai, List<Categoria> categorias) {
+	public Categoria(Integer id, String nome, Categoria categoriaPai, List<Categoria> categorias,
+			List<Produto> produtos) {
 		super();
 		this.id = id;
 		this.nome = nome;
 		this.categoriaPai = categoriaPai;
 		this.categorias = categorias;
+		this.produtos = produtos;
 	}
 
 	public Integer getId() {
@@ -71,6 +77,14 @@ public class Categoria {
 
 	public void setCategorias(List<Categoria> categorias) {
 		this.categorias = categorias;
+	}
+
+	public List<Produto> getProdutos() {
+		return produtos;
+	}
+
+	public void setProdutos(List<Produto> produtos) {
+		this.produtos = produtos;
 	}
 
 	@Override

@@ -2,13 +2,14 @@ package com.algaworks.ecommerce.model;
 
 import java.util.Objects;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -18,23 +19,24 @@ public class PagamentoCartao {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-	
-	@Column(name = "pedido_id")
-	private Integer pedidoId;
-	
+
+	@OneToOne(optional = false)
+	@JoinColumn(name = "pedido_id")
+	private Pedido pedido;
+
 	@Enumerated(EnumType.STRING)
 	private StatusPagamento status;
-	
+
 	private String numero;
 
 	public PagamentoCartao() {
 		super();
 	}
 
-	public PagamentoCartao(Integer id, Integer pedidoId, StatusPagamento status, String numero) {
+	public PagamentoCartao(Integer id, Pedido pedido, StatusPagamento status, String numero) {
 		super();
 		this.id = id;
-		this.pedidoId = pedidoId;
+		this.pedido = pedido;
 		this.status = status;
 		this.numero = numero;
 	}
@@ -47,12 +49,12 @@ public class PagamentoCartao {
 		this.id = id;
 	}
 
-	public Integer getPedidoId() {
-		return pedidoId;
+	public Pedido getPedido() {
+		return pedido;
 	}
 
-	public void setPedidoId(Integer pedidoId) {
-		this.pedidoId = pedidoId;
+	public void setPedido(Pedido pedido) {
+		this.pedido = pedido;
 	}
 
 	public StatusPagamento getStatus() {

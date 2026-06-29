@@ -2,11 +2,12 @@ package com.algaworks.ecommerce.model;
 
 import java.util.Objects;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -17,8 +18,9 @@ public class Estoque {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	
-	@Column(name = "produto_id")
-	private Integer produtoId;
+	@OneToOne(optional = false)
+	@JoinColumn(name = "produto_id")
+	private Produto produto;
 	
 	private Integer quantidade;
 
@@ -26,10 +28,10 @@ public class Estoque {
 		super();
 	}
 
-	public Estoque(Integer id, Integer produtoId, Integer quantidade) {
+	public Estoque(Integer id, Produto produto, Integer quantidade) {
 		super();
 		this.id = id;
-		this.produtoId = produtoId;
+		this.produto = produto;
 		this.quantidade = quantidade;
 	}
 
@@ -41,12 +43,12 @@ public class Estoque {
 		this.id = id;
 	}
 
-	public Integer getProdutoId() {
-		return produtoId;
+	public Produto getProduto() {
+		return produto;
 	}
-
-	public void setProdutoId(Integer produtoId) {
-		this.produtoId = produtoId;
+	
+	public void setProduto(Produto produto) {
+		this.produto = produto;
 	}
 
 	public Integer getQuantidade() {
