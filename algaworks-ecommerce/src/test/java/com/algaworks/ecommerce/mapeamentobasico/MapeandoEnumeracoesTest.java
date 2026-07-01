@@ -2,8 +2,6 @@ package com.algaworks.ecommerce.mapeamentobasico;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.List;
-
 import org.junit.jupiter.api.Test;
 
 import com.algaworks.ecommerce.EntityManagerTest;
@@ -15,7 +13,10 @@ public class MapeandoEnumeracoesTest extends EntityManagerTest {
 	@Test
 	public void testarEnum() {
 
-		Cliente cliente = new Cliente(null, "José Mineiro", Sexo.MASCULINO, List.of());
+		Cliente cliente = new Cliente();
+		
+		cliente.setNome( "José Mineiro");
+		cliente.setSexo(Sexo.MASCULINO);
 
 		entityManager.getTransaction().begin();
 		entityManager.persist(cliente);

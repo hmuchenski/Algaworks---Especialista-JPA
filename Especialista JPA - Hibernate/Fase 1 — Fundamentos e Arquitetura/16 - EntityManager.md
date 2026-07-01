@@ -88,26 +88,10 @@ Em uma aplicação de e-commerce padronizada, ao registrar uma nova venda, o des
 
 | Característica | EntityManager (JPA) / Session (Hibernate) | EntityManagerFactory |
 | --- | --- | --- |
-| **Peso Operacional** | Leve (*Lightweight*) 
-
- | Pesado (*Heavyweight*) 
-
- |
-| **Escopo** | Transacional / Request / Thread 
-
- | Global da Aplicação / Singleton 
-
- |
-| **Thread-Safety** | Estritamente Thread-Unsafe 
-
- | Totalmente Thread-Safe 
-
- |
-| **Responsabilidade** | Executar CRUD e gerir o estado no ciclo de vida 
-
- | Compilar metadados e fabricar as sessões 
-
- |
+| **Peso Operacional** | Leve (*Lightweight*) | Pesado (*Heavyweight*) |
+| **Escopo** | Transacional / Request / Thread | Global da Aplicação / Singleton  |
+| **Thread-Safety** | Estritamente Thread-Unsafe | Totalmente Thread-Safe |
+| **Responsabilidade** | Executar CRUD e gerir o estado no ciclo de vida | Compilar metadados e fabricar as sessões |
 
 **20. Checklist mental**
 

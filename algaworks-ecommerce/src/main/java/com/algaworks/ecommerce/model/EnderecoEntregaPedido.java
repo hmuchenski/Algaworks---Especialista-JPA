@@ -23,18 +23,6 @@ public class EnderecoEntregaPedido {
 		super();
 	}
 
-	public EnderecoEntregaPedido(String cep, String logradouro, String numero, String bairro, String cidade,
-			String estado, String complemento) {
-		super();
-		this.cep = cep;
-		this.logradouro = logradouro;
-		this.numero = numero;
-		this.bairro = bairro;
-		this.cidade = cidade;
-		this.estado = estado;
-		this.complemento = complemento;
-	}
-
 	public String getCep() {
 		return cep;
 	}

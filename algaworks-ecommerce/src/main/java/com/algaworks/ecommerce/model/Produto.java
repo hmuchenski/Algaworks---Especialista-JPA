@@ -3,18 +3,17 @@ package com.algaworks.ecommerce.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 import com.algaworks.ecommerce.listener.GerarLogListener;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -22,11 +21,7 @@ import jakarta.persistence.Table;
 @EntityListeners(value = { GerarLogListener.class })
 @Entity
 @Table(name = "produto")
-public class Produto {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+public class Produto extends EntidadeBaseInteger {
 
 	@Column(name = "data_criacao", updatable = false)
 	private LocalDateTime dataCriacao;
@@ -34,10 +29,14 @@ public class Produto {
 	@Column(name = "data_ultima_atualizacao", insertable = false)
 	private LocalDateTime dataUltimaAtualizacao;
 
+	@Column(length = 100, nullable = false)
 	private String nome;
 
+	@Lob
+	//@Column(columnDefinition = "varchar(250) not null default 'descrição'")
 	private String descricao;
 
+	@Column(precision = 19, scale = 2)
 	private BigDecimal preco;
 
 	@OneToOne(mappedBy = "produto")
@@ -47,29 +46,17 @@ public class Produto {
 	@JoinTable(name = "produto_categoria", joinColumns = @JoinColumn(name = "produto_id"), inverseJoinColumns = @JoinColumn(name = "categoria_id"))
 	private List<Categoria> categorias;
 
+	@ElementCollection
+	@CollectionTable(name = "produto_tag", joinColumns = @JoinColumn(name = "produto_id"))
+	@Column(name = "tag")
+	private List<String> tags;
+
+	@ElementCollection
+	@CollectionTable(name = "produto_atributo", joinColumns = @JoinColumn(name = "produto_id"))
+	private List<Atributo> atributos;
+
 	public Produto() {
 		super();
-	}
-
-	public Produto(Integer id, String nome, String descricao, BigDecimal preco, List<Categoria> categorias,
-			Estoque estoque, LocalDateTime dataCriacao, LocalDateTime dataUltimaAtualizacao) {
-		super();
-		this.id = id;
-		this.nome = nome;
-		this.descricao = descricao;
-		this.preco = preco;
-		this.categorias = categorias;
-		this.estoque = estoque;
-		this.dataCriacao = dataCriacao;
-		this.dataUltimaAtualizacao = dataUltimaAtualizacao;
-	}
-
-	public Integer getId() {
-		return id;
-	}
-
-	public void setId(Integer id) {
-		this.id = id;
 	}
 
 	public String getNome() {
@@ -128,21 +115,20 @@ public class Produto {
 		this.dataUltimaAtualizacao = dataUltimaAtualizacao;
 	}
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(id);
+	public List<String> getTags() {
+		return tags;
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Produto other = (Produto) obj;
-		return Objects.equals(id, other.id);
+	public void setTags(List<String> tags) {
+		this.tags = tags;
+	}
+
+	public List<Atributo> getAtributos() {
+		return atributos;
+	}
+
+	public void setAtributos(List<Atributo> atributos) {
+		this.atributos = atributos;
 	}
 
 }

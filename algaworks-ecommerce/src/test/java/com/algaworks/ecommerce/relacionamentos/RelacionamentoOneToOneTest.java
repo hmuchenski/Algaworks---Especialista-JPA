@@ -1,5 +1,6 @@
 package com.algaworks.ecommerce.relacionamentos;
 
+import java.nio.charset.Charset;
 import java.util.Date;
 
 import org.junit.jupiter.api.Assertions;
@@ -37,7 +38,8 @@ public class RelacionamentoOneToOneTest extends EntityManagerTest {
         Pedido pedido = entityManager.find(Pedido.class, 1);
 
         NotaFiscal notaFiscal = new NotaFiscal();
-        notaFiscal.setXml("TESTE");
+        notaFiscal.setId(pedido.getId());
+        notaFiscal.setXml("<xml/>".getBytes(Charset.defaultCharset()));
         notaFiscal.setDataEmissao(new Date());
         notaFiscal.setPedido(pedido);
 

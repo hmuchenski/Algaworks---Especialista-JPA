@@ -1,3 +1,5 @@
+### Tópico: Configuração do application.properties
+
 ## 1. Objetivo
 
 Centralizar, externalizar e simplificar a declaração das propriedades ambientais e operacionais que regem a inicialização e o comportamento do provedor de persistência (Hibernate) e da infraestrutura JPA (DataSource, EntityManagerFactory) em uma aplicação Spring Boot, eliminando a necessidade do tradicional e verboso arquivo `persistence.xml`.

@@ -1,148 +1,164 @@
 package com.algaworks.ecommerce.iniciandocomjpa;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import com.algaworks.ecommerce.EntityManagerTest;
+import com.algaworks.ecommerce.model.Produto;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import org.junit.jupiter.api.Test;
-
-import com.algaworks.ecommerce.EntityManagerTest;
-import com.algaworks.ecommerce.model.Produto;
-
 public class OperacoesComTransacaoTest extends EntityManagerTest {
 
-	@Test
-	public void impedirOperacaoComBancoDeDados() {
+    @Test
+    public void impedirOperacaoComBancoDeDados() {
+        Produto produto = entityManager.find(Produto.class, 1);
+        entityManager.detach(produto);
 
-		Produto produto = entityManager.find(Produto.class, 1l);
-		entityManager.detach(produto);
-		
-		entityManager.getTransaction().begin();
-		produto.setNome("Kindle PaperWhite");
-		entityManager.getTransaction().commit();
+        entityManager.getTransaction().begin();
+        produto.setNome("Kindle Paperwhite 2ª Geração");
+        entityManager.getTransaction().commit();
 
-		entityManager.clear();
+        entityManager.clear();
 
-		Produto produtoAlterado = entityManager.find(Produto.class, produto.getId());
+        Produto produtoVerificacao = entityManager.find(Produto.class, produto.getId());
+        Assertions.assertEquals("Kindle", produtoVerificacao.getNome());
+    }
 
-		assertEquals("Kindle", produtoAlterado.getNome());
-	}
+    @Test
+    public void mostrarDifencaPersistMerge() {
+        Produto produtoPersist = new Produto();
 
-	@Test
-	public void mostrarDifencaPersistMerge() {
-		Produto produtoPersist = new Produto();
+//        produtoPersist.setId(5);
+        produtoPersist.setNome("Smartphone One Plus");
+        produtoPersist.setDescricao("O processador mais rápido.");
+        produtoPersist.setPreco(new BigDecimal(2000));
 
-		produtoPersist.setNome("Smartphone One Plus");
-		produtoPersist.setDescricao("O processador mais rápido.");
-		produtoPersist.setPreco(new BigDecimal(2000));
+        entityManager.getTransaction().begin();
+        entityManager.persist(produtoPersist);
+        produtoPersist.setNome("Smartphone Two Plus");
+        entityManager.getTransaction().commit();
 
-		entityManager.getTransaction().begin();
-		entityManager.persist(produtoPersist); // Make an instance managed and persistent.
-		produtoPersist.setNome("Smartphone Two Plus");
-		entityManager.getTransaction().commit();
+        entityManager.clear();
 
-		entityManager.clear();
+        Produto produtoVerificacaoPersist = entityManager.find(Produto.class, produtoPersist.getId());
+        Assertions.assertNotNull(produtoVerificacaoPersist);
 
-		Produto produtoVerificacaoPersist = entityManager.find(Produto.class, produtoPersist.getId());
-		assertNotNull(produtoVerificacaoPersist);
 
-		Produto produtoMerge = new Produto();
 
-		produtoMerge.setNome("Notebook Dell");
-		produtoMerge.setDescricao("O melhor da categoria.");
-		produtoMerge.setPreco(new BigDecimal(2000));
+        Produto produtoMerge = new Produto();
 
-		entityManager.getTransaction().begin();
-		produtoMerge = entityManager.merge(produtoMerge); // Returns: the managed instance that the state was merged to
-		produtoMerge.setNome("Notebook Dell 2");
-		entityManager.getTransaction().commit();
+//        produtoMerge.setId(6);
+        produtoMerge.setNome("Notebook Dell");
+        produtoMerge.setDescricao("O melhor da categoria.");
+        produtoMerge.setPreco(new BigDecimal(2000));
 
-		entityManager.clear();
+        entityManager.getTransaction().begin();
+        produtoMerge = entityManager.merge(produtoMerge);
+        produtoMerge.setNome("Notebook Dell 2");
+        entityManager.getTransaction().commit();
 
-		Produto produtoVerificacaoMerge = entityManager.find(Produto.class, produtoMerge.getId());
-		assertNotNull(produtoVerificacaoMerge);
-	}
+        entityManager.clear();
 
-	@Test
-	public void inserirObjetoComMerge() {
+        Produto produtoVerificacaoMerge = entityManager.find(Produto.class, produtoMerge.getId());
+        Assertions.assertNotNull(produtoVerificacaoMerge);
+    }
 
-		Produto produto = new Produto(null, "Microfone", "Melhor qualidade de som", new BigDecimal(1000.0), null, null, null, null);
+    @Test
+    public void inserirObjetoComMerge() {
+        Produto produto = new Produto();
 
-		entityManager.getTransaction().begin();
-		produto = entityManager.merge(produto);
-		entityManager.getTransaction().commit();
+//        produto.setId(4);
+        produto.setNome("Microfone Rode Videmic");
+        produto.setDescricao("A melhor qualidade de som.");
+        produto.setPreco(new BigDecimal(1000));
 
-		entityManager.clear();
+        entityManager.getTransaction().begin();
+        Produto produtoSalvo = entityManager.merge(produto);
+        entityManager.getTransaction().commit();
 
-		Produto produtoCadastrado = entityManager.find(Produto.class, produto.getId());
+        entityManager.clear();
 
-		assertEquals(produto.getNome(), produtoCadastrado.getNome());
-	}
+        Produto produtoVerificacao = entityManager.find(Produto.class, produtoSalvo.getId());
+        Assertions.assertNotNull(produtoVerificacao);
+    }
 
-	@Test
-	public void atualizarObjetoGerenciado() {
+    @Test
+    public void atualizarObjetoGerenciado() {
+        Produto produto = entityManager.find(Produto.class, 1);
 
-		Produto produto = entityManager.getReference(Produto.class, 1l);
+        entityManager.getTransaction().begin();
+        produto.setNome("Kindle Paperwhite 2ª Geração");
+        entityManager.getTransaction().commit();
 
-		entityManager.getTransaction().begin();
-		produto.setNome("Kindle PaperWhite 2");
-		entityManager.getTransaction().commit();
+        entityManager.clear();
 
-		entityManager.clear();
+        Produto produtoVerificacao = entityManager.find(Produto.class, produto.getId());
+        Assertions.assertEquals("Kindle Paperwhite 2ª Geração", produtoVerificacao.getNome());
+    }
 
-		Produto produtoAlterado = entityManager.find(Produto.class, produto.getId());
+    @Test
+    public void atualizarObjeto() {
+        Produto produto = new Produto();
 
-		assertEquals(produto.getNome(), produtoAlterado.getNome());
-	}
+        produto.setId(1);
+        produto.setNome("Kindle Paperwhite");
+        produto.setDescricao("Conheça o novo Kindle.");
+        produto.setPreco(new BigDecimal(599));
 
-	@Test
-	public void atualizarObjetoNaoGerenciado() {
+        entityManager.getTransaction().begin();
+        entityManager.merge(produto);
+        entityManager.getTransaction().commit();
 
-		Produto produto = new Produto(1, "Câmera Canon", "A melhor definição para suas fotos", new BigDecimal(5000.0), null, null, null, null);
+        entityManager.clear();
 
-		produto.setNome("Câmera Canon 2.0");
+        Produto produtoVerificacao = entityManager.find(Produto.class, produto.getId());
+        Assertions.assertNotNull(produtoVerificacao);
+        Assertions.assertEquals("Kindle Paperwhite", produtoVerificacao.getNome());
+    }
 
-		entityManager.getTransaction().begin();
-		entityManager.merge(produto);
-		entityManager.getTransaction().commit();
+    @Test
+    public void removerObjeto() {
+        Produto produto = entityManager.find(Produto.class, 3);
 
-		entityManager.clear();
+        entityManager.getTransaction().begin();
+        entityManager.remove(produto);
+        entityManager.getTransaction().commit();
 
-		Produto produtoAlterado = entityManager.find(Produto.class, produto.getId());
+//        entityManager.clear(); Não é necessário na asserção para operação de remoção.
 
-		assertEquals(produto.getNome(), produtoAlterado.getNome());
-	}
+        Produto produtoVerificacao = entityManager.find(Produto.class, 3);
+        Assertions.assertNull(produtoVerificacao);
+    }
 
-	@Test
-	public void removerObjeto() {
+    @Test
+    public void inserirOPrimeiroObjeto() {
+        Produto produto = new Produto();
 
-		Produto produto = entityManager.getReference(Produto.class, 1l);
+//        produto.setId(2);
+        produto.setNome("Câmera Canon");
+        produto.setDescricao("A melhor definição para suas fotos.");
+        produto.setPreco(new BigDecimal(5000));
 
-		entityManager.getTransaction().begin();
-		entityManager.remove(produto);
-		entityManager.getTransaction().commit();
+        entityManager.getTransaction().begin();
+        entityManager.persist(produto);
+        entityManager.getTransaction().commit();
 
-		produto = entityManager.find(Produto.class, 1l);
+        entityManager.clear();
 
-		assertNull(produto);
-	}
+        Produto produtoVerificacao = entityManager.find(Produto.class, produto.getId());
+        Assertions.assertNotNull(produtoVerificacao);
+    }
 
-	@Test
-	public void inserirObjeto() {
+    @Test
+    public void abrirEFecharATransacao() {
+//        Produto produto = new Produto(); // Somente para o método não mostrar erros.
 
-		Produto produto = new Produto(null, "Câmera Canon", "A melhor definição para suas fotos", new BigDecimal(5000.0), null, null, null, null);
+        entityManager.getTransaction().begin();
 
-		entityManager.getTransaction().begin();
-		entityManager.persist(produto);
-		entityManager.getTransaction().commit();
+//        entityManager.persist(produto);
+//        entityManager.merge(produto);
+//        entityManager.remove(produto);
 
-		entityManager.clear();
-
-		Produto produtoCadastrado = entityManager.find(Produto.class, produto.getId());
-
-		assertEquals(produto.getNome(), produtoCadastrado.getNome());
-	}
-
+        entityManager.getTransaction().commit();
+    }
 }

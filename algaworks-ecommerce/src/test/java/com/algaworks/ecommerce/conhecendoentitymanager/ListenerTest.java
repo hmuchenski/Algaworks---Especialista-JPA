@@ -21,7 +21,6 @@ public class ListenerTest extends EntityManagerTest {
         entityManager.getTransaction().begin();
 
         entityManager.persist(pedido);
-        entityManager.flush();
 
         pedido.setStatus(StatusPedido.PAGO);
         entityManager.getTransaction().commit();

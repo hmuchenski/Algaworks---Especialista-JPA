@@ -5,8 +5,7 @@ Diferenciar a especificação (JPA) da implementação (Hibernate), permitindo a
 
 **2. O que é?**
 
-* 
-**JPA (Jakarta Persistence):** É uma especificação técnica (API) definida pela Jakarta EE que estabelece regras, interfaces e contratos para persistência.
+* **JPA (Jakarta Persistence):** É uma especificação técnica (API) definida pela Jakarta EE que estabelece regras, interfaces e contratos para persistência.
 
 
 * **Hibernate:** É o *Persistence Provider* (implementação), a biblioteca concreta que contém a lógica de baixo nível para realizar as operações definidas pela JPA.

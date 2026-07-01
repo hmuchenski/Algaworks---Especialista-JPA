@@ -3,7 +3,6 @@ package com.algaworks.ecommerce.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 
 import com.algaworks.ecommerce.listener.GerarLogListener;
 import com.algaworks.ecommerce.listener.GerarNotaFiscalListener;
@@ -14,9 +13,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -33,11 +29,7 @@ import jakarta.persistence.Table;
 @EntityListeners(value = { GerarNotaFiscalListener.class, GerarLogListener.class })
 @Entity
 @Table(name = "pedido")
-public class Pedido {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+public class Pedido extends EntidadeBaseInteger {
 
 	@Column(name = "data_criacao", updatable = false)
 	private LocalDateTime dataCriacao;
@@ -64,7 +56,7 @@ public class Pedido {
 	private List<ItemPedido> itensPedidos;
 
 	@OneToOne(mappedBy = "pedido")
-	private PagamentoCartao pagamento;
+	private Pagamento pagamento;
 
 	@OneToOne(mappedBy = "pedido")
 	private NotaFiscal notaFiscal;
@@ -73,25 +65,7 @@ public class Pedido {
 		super();
 	}
 
-	public Pedido(Integer id, LocalDateTime dataCriacao, LocalDateTime dataConclusao, BigDecimal total,
-			StatusPedido status, EnderecoEntregaPedido enderecoEntrega, Cliente cliente, List<ItemPedido> itensPedidos,
-			PagamentoCartao pagamento, NotaFiscal notaFiscal, LocalDateTime dataUltimaAtualizacao) {
-		super();
-		this.id = id;
-		this.dataCriacao = dataCriacao;
-		this.dataConclusao = dataConclusao;
-		this.total = total;
-		this.status = status;
-		this.enderecoEntrega = enderecoEntrega;
-		this.cliente = cliente;
-		this.itensPedidos = itensPedidos;
-		this.pagamento = pagamento;
-		this.notaFiscal = notaFiscal;
-		this.dataUltimaAtualizacao = dataUltimaAtualizacao;
-	}
-	
-	public boolean isPago()
-	{
+	public boolean isPago() {
 		return StatusPedido.PAGO.equals(status);
 	}
 
@@ -140,14 +114,6 @@ public class Pedido {
 	@PostLoad
 	public void aoCarregar() {
 		System.out.println("Após carregar o Pedido.");
-	}
-
-	public Integer getId() {
-		return id;
-	}
-
-	public void setId(Integer id) {
-		this.id = id;
 	}
 
 	public LocalDateTime getDataCriacao() {
@@ -206,7 +172,7 @@ public class Pedido {
 		this.itensPedidos = itensPedidos;
 	}
 
-	public PagamentoCartao getPagamento() {
+	public Pagamento getPagamento() {
 		return pagamento;
 	}
 
@@ -228,23 +194,6 @@ public class Pedido {
 
 	public void setDataUltimaAtualizacao(LocalDateTime dataUltimaAtualizacao) {
 		this.dataUltimaAtualizacao = dataUltimaAtualizacao;
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(id);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Pedido other = (Pedido) obj;
-		return Objects.equals(id, other.id);
 	}
 
 }
